@@ -1,7 +1,8 @@
-#pragma once
+//#pragma once
 
 #include "Vertex2D.h"
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -347,22 +348,32 @@ public:
 
 	// Prints a traversal of all the vertices along the boundary of the polygon.  Note that because
 	// the traversal takes only one path, a simple while-loop is used.
-	void PrintTraversal(Vertex2D* Start)
+	vector<point> PrintTraversal(Vertex2D* Start)
 	{
+		vector<point> hull;
+		point tmp;
 		if (Start->edgeList.size() > 0)
 		{
 			Vertex2D* destination = Start->edgeList[0];  // The correct 'Next' vertex will always be element 0 of the edge list.
 
-			cout << "Start:  (" << Start->position.x << ", " << Start->position.y << ") --> " << endl;
+			//cout << "Start:  (" << Start->position.x << ", " << Start->position.y << ") --> " << endl;
+			tmp.x = Start->position.x;
+			tmp.y = Start->position.y;
+			hull.push_back(tmp);
 
 			while (destination->position.x != Start->position.x || destination->position.y != Start->position.y)
 			{
-				cout << "(" << destination->position.x << ", " << destination->position.y << ") --> " << endl;
+				//cout << "(" << destination->position.x << ", " << destination->position.y << ") --> " << endl;
+				tmp.x = destination->position.x;
+				tmp.y = destination->position.y;
+				hull.push_back(tmp);
 
 				destination = destination->edgeList[0];
 			}
 
-			cout << "End" << endl;
+			//cout << "End" << endl;
+
 		}
+		return hull;
 	}
 };

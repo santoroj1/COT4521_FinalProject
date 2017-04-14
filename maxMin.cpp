@@ -3,6 +3,7 @@ James Albu
 John Santoro
 
 */
+//#include "stdafx.h"
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -11,7 +12,9 @@ John Santoro
 #include <sstream>
 #include <algorithm>
 #include <iterator>
+#include <cmath>
 #include "ConvexHull.h"
+
 
 using namespace std;
 //Point coordinate struct
@@ -29,26 +32,32 @@ void fileInput(vector<point> &fHull, vector<point> &sHull) {
 	char cma = ',';
 	//String stream to hold and transfer values to vector
 	stringstream ss;
+	//Used to make sure the file is open properly
+	
+	if (!myfile.is_open()) {
+		cout << "File was read unsuccesfully" << endl;
+	}
 
-	while (data != "Second") { //FIXME: change conditions to something not error prone
+	while (1) { //FIXME: change conditions to something not error prone
 		//Clear the sstream
 		ss.str("");
 		ss.clear();
 		//get the current line
 		getline(myfile, data);
-
 		//Skip the first line
-		if (data == "First")
+		if (data.find("First") != string::npos) {
 			continue;
+		}
 		//Break loop if "Second" is read
-		else if (data == "Second")
+		else if (data.find("Second") != string::npos) {
 			break;
+		}
 		else {
 			ss << data;
 			ss >> tmp.x >> cma >> tmp.y;
 			fHull.push_back(tmp);
-			
 		}
+		
 	}
 	while (!myfile.eof()) {
 		ss.str("");
@@ -59,33 +68,29 @@ void fileInput(vector<point> &fHull, vector<point> &sHull) {
 		ss >> tmp.x >> cma >> tmp.y;
 
 		sHull.push_back(tmp);
+		cout << tmp.x + " "+ tmp.y << endl;
 	}
-	/*
-	for (int i = 0; i < fHull.size(); ++i)
-		cout << fHull[i].x << "," << fHull[i].y << endl;
-	*/
+	
 	myfile.close();
 }
 
 int main() 
 {
-
+	cout << "Beginning";
 	vector<point> fHull;
 	vector<point> sHull;
-
+	cout << "After initialization";
 	fileInput(fHull, sHull);
 
 	ConvexHull firstHull = ConvexHull(fHull, false);
 	ConvexHull secondHull = ConvexHull(sHull, false);
 
 	cout << "First Hull" << endl;
-	firstHull.PrintTraversal(firstHull.StartPoint());
+	fHull = firstHull.PrintTraversal(firstHull.StartPoint());
 	firstHull.PrintVisual(0, 15, 0, 15);
 	cout << endl << "Second Hull" << endl;
-	secondHull.PrintTraversal(secondHull.StartPoint());
+	sHull = secondHull.PrintTraversal(secondHull.StartPoint());
 	secondHull.PrintVisual(0, 15, 0, 15);
-
-	cin.get();
 
 	return 0;
 }
