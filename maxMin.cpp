@@ -68,7 +68,9 @@ void fileInput(vector<point> &fHull, vector<point> &sHull) {
 		ss >> tmp.x >> cma >> tmp.y;
 
 		sHull.push_back(tmp);
-		cout << tmp.x + " "+ tmp.y << endl;
+
+		// Changed this line to use '<<' operator as '+' doesn't work in Visual Studio.
+		cout << tmp.x << " " << tmp.y << endl;
 	}
 	
 	myfile.close();

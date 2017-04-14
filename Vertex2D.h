@@ -1,13 +1,15 @@
-#pragma once
+#ifndef VERTEX_H
+#define VERTEX_H
 
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
+// CHANGED THIS STRUCTURE
 typedef struct {
-	int x;
-	int y;
+	double x;
+	double y;
 }point;
 
 class Vertex2D
@@ -84,5 +86,18 @@ public:
 		}
 	}
 
+	/*******************************************************************
+	*	NEW PUBLIC CODE ADDED HERE!  O(1)
+	*******************************************************************/
+
+	vector<Vertex2D*> EdgeList() { return edgeList; };
+	point Position() { return position; };
+
+	/*******************************************************************
+	*	END NEW PUBLIC CODE
+	*******************************************************************/
+
 	~Vertex2D() {}
 };
+
+#endif // !VERTEX_H

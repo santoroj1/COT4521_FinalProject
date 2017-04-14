@@ -1,8 +1,10 @@
-//#pragma once
+#ifndef CONVEXHULL_H
+#define CONVEXHULL_H
 
 #include "Vertex2D.h"
 #include <string>
 #include <vector>
+#include <limits>
 
 using namespace std;
 
@@ -67,6 +69,47 @@ private:
 		// If sin(val) > 0 then the angle is less than 180 degrees and thus, left.
 		return sin(Val2 - Val1) > 0;
 	}
+	
+	/**********************************************************************************************************************
+	*	NEW PRIVATE CODE ADDED HERE!  NOTE THAT ALL FUNCTIONS OPERATE IN O(1).
+	**********************************************************************************************************************/
+
+	// Gets the distance between two points.
+	double PointDistance(point& P1, point& P2)
+	{
+		return sqrt(pow(P2.x - P1.x, 2) + pow(P2.y - P1.y, 2));
+	}
+
+	// Gets the length of a point and treats it as if it were a vector.
+	double PointLength(point& InputPoint)
+	{
+		return sqrt(pow(InputPoint.x, 2) + pow(InputPoint.y, 2));
+	}
+
+	// Normalizes the input point to a length of 1.
+	point NormalizePoint(point& InputPoint)
+	{
+		double pointLength = PointLength(InputPoint);
+
+		point normalizedPoint = point();
+
+		if (pointLength > 0)
+		{
+			normalizedPoint.x = InputPoint.x / pointLength;
+			normalizedPoint.y = InputPoint.y / pointLength;
+		}
+		else
+		{
+			normalizedPoint.x = 0;
+			normalizedPoint.y = 0;
+		}
+
+		return normalizedPoint;
+	}
+
+	/**********************************************************************************************************************
+	*	END NEW PRIVATE CODE
+	**********************************************************************************************************************/
 
 	// Gets rid of nonessential edges.
 	void RemoveExtraLines(Vertex2D* TraversalStart, Vertex2D* TraversalEnd)
@@ -356,7 +399,7 @@ public:
 		{
 			Vertex2D* destination = Start->edgeList[0];  // The correct 'Next' vertex will always be element 0 of the edge list.
 
-			//cout << "Start:  (" << Start->position.x << ", " << Start->position.y << ") --> " << endl;
+														 //cout << "Start:  (" << Start->position.x << ", " << Start->position.y << ") --> " << endl;
 			tmp.x = Start->position.x;
 			tmp.y = Start->position.y;
 			hull.push_back(tmp);
@@ -376,4 +419,58 @@ public:
 		}
 		return hull;
 	}
+
+	/**********************************************************************************************************************
+	*	NEW PUBLIC CODE ADDED HERE!  NOTE THAT ALL FUNCTIONS OPERATE IN O(1).
+	**********************************************************************************************************************/
+
+	// Determines the distance from a point to a line.  Note that this function works like a left test:  If
+	// the point is left of the line, the returned value will be positive; otherwise, it will be negative.  An
+	// undefined value will be returned if the point is not in the same domain as the line segment.
+	double PointToLineDistance(point& LineStart, point& LineEnd, point& TestVertex)
+	{
+		// Create line direction vector
+		point LineDirection = point();
+
+		LineDirection.x = LineEnd.x - LineStart.x;
+		LineDirection.y = LineEnd.y - LineStart.y;
+
+		// Perpendicular vector must be oriented away from the vertex.
+		point PerpendicularLineDirection = point();
+
+		PerpendicularLineDirection.x = -LineDirection.y;
+		PerpendicularLineDirection.y = LineDirection.x;
+
+		// Normalize direction vectors...
+		PerpendicularLineDirection = NormalizePoint(PerpendicularLineDirection);
+
+		// Get distance to line, and then show perpendicular line from point.
+		double distance = ((LineEnd.x - LineStart.x) * (LineStart.y - TestVertex.y) - (LineStart.x - TestVertex.x) * (LineEnd.y - LineStart.y)) /
+			sqrt(pow(LineEnd.x - LineStart.x, 2) + pow(LineEnd.y - LineStart.y, 2));
+
+		point intersectionTestPoint = point();
+
+		intersectionTestPoint.x = TestVertex.x + distance * PerpendicularLineDirection.x;
+		intersectionTestPoint.y = TestVertex.y + distance * PerpendicularLineDirection.y;
+
+		// Check to see if the distance is valid, and return -1 if it is not.  Note that the endpoint of the normal will always appear on the same line
+		// as the line segment; as a result, distance-checking is a valid comparison.
+		point centerOfLine = point();
+
+		centerOfLine.x = LineStart.x + LineDirection.x / 2.0;
+		centerOfLine.y = LineStart.y + LineDirection.y / 2.0;
+
+		if (PointDistance(intersectionTestPoint, centerOfLine) > PointLength(LineDirection) / 2.0)
+			distance = DBL_MAX;
+		else
+			distance = -distance;
+
+		return distance;
+	}
+
+	/**********************************************************************************************************************
+	*	END NEW PUBLIC CODE
+	**********************************************************************************************************************/
 };
+
+#endif
