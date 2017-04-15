@@ -1,0 +1,310 @@
+// Place this code at the top of maxMin.cpp.
+
+double PointToLineDistance(point& LineStart, point& LineEnd, point& TestVertex)
+{
+	// Create line direction vector
+	point LineDirection = point();
+
+	LineDirection.x = LineEnd.x - LineStart.x;
+	LineDirection.y = LineEnd.y - LineStart.y;
+
+	// Perpendicular vector must be oriented away from the vertex.
+	point PerpendicularLineDirection = point();
+
+	PerpendicularLineDirection.x = -LineDirection.y;
+	PerpendicularLineDirection.y = LineDirection.x;
+
+	// Normalize direction vectors...
+	double pointLen = sqrt(pow(PerpendicularLineDirection.x, 2) + pow(PerpendicularLineDirection.y, 2));
+
+	PerpendicularLineDirection.x = (pointLen > 0 ? PerpendicularLineDirection.x / pointLen : 0);
+	PerpendicularLineDirection.y = (pointLen > 0 ? PerpendicularLineDirection.y / pointLen : 0);
+
+	// Get distance to line, and then show perpendicular line from point.
+	double distance = ((LineEnd.x - LineStart.x) * (LineStart.y - TestVertex.y) - (LineStart.x - TestVertex.x) * (LineEnd.y - LineStart.y)) /
+		sqrt(pow(LineEnd.x - LineStart.x, 2) + pow(LineEnd.y - LineStart.y, 2));
+
+	point intersectionTestPoint = point();
+
+	intersectionTestPoint.x = TestVertex.x + distance * PerpendicularLineDirection.x;
+	intersectionTestPoint.y = TestVertex.y + distance * PerpendicularLineDirection.y;
+
+	// Check to see if the distance is valid, and return -1 if it is not.  Note that the endpoint of the normal will always appear on the same line
+	// as the line segment; as a result, distance-checking is a valid comparison.
+	point centerOfLine = point();
+
+	centerOfLine.x = LineStart.x + LineDirection.x / 2.0;
+	centerOfLine.y = LineStart.y + LineDirection.y / 2.0;
+
+	double ptDist = sqrt(pow(centerOfLine.x - intersectionTestPoint.x, 2) + pow(centerOfLine.y - intersectionTestPoint.y, 2));
+	double ptLen = sqrt(pow(LineDirection.x, 2) + pow(LineDirection.y, 2));
+
+	if (ptDist > ptLen / 2.0)
+		distance = DBL_MAX;
+	else
+		distance = -distance;
+
+	return distance;
+}
+
+double MinPolygonDistance(vector<point>& Hull1, vector<point>& Hull2)
+{
+	bool done = false;
+	double minDist = DBL_MAX;
+	int StepCount = 0, Mode = 0, V2IndexPrev = 0, NearestV2Index = 0, V2Index = 0,
+		V1IndexPrev = 0, NearestV1Index = 0, V1Index = 0;
+
+	while (!done)
+	{
+		if (Mode != 3)
+		{
+			bool doThisOnce = false;
+
+			if (Mode == 0 && !doThisOnce)  // Go through vertices in P1 and determine minimum distance to other polygon's vertices.
+			{
+				point debugLineDirection = point(); 
+				
+				debugLineDirection.x = Hull2[V2Index].x - Hull1[V1Index].x;
+				debugLineDirection.y = Hull2[V2Index].y - Hull1[V1Index].y;
+
+				double distToLine = sqrt(pow(debugLineDirection.x, 2) + pow(debugLineDirection.y, 2));
+
+				if (abs(distToLine) < abs(minDist))
+				{
+					minDist = distToLine;
+
+					NearestV1Index = V1Index;
+					NearestV2Index = V2Index;
+				}
+
+				V1IndexPrev = V1Index;
+				V2IndexPrev = V2Index;
+
+				// For now, simply do brute force...
+				V1Index++;
+
+				if (V1Index >= Hull1.size())
+				{
+					V1Index = 0;
+					V2Index++;
+
+					if (V2Index >= Hull2.size())
+					{
+						V2Index = 0;
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+			if (Mode == 1 && !doThisOnce)  // Check P1.Vertex --> P2.Edge
+			{
+				// Get distance from point to this line...
+				double distToLine =
+					PointToLineDistance(Hull2[V2IndexPrev], Hull2[V2Index], Hull1[V1Index]);
+
+				if (abs(distToLine) < abs(minDist))
+				{
+					minDist = -distToLine;
+
+					NearestV1Index = V1Index;
+				}
+
+				V1IndexPrev = V1Index;
+
+				// For now, simply do brute force...
+				V1Index++;
+
+				if (V1Index >= Hull1.size())
+				{
+					V1Index = 0;
+
+					V2IndexPrev = V2Index;
+					V2Index++;
+
+					if (V2Index >= Hull2.size())
+					{
+						V2Index = 0;
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+			if (Mode == 2 && !doThisOnce)  // Check P2.Vertex --> P1.Edge
+			{
+				// Get distance from point to this line...
+				double distToLine =
+					PointToLineDistance(Hull1[V1IndexPrev], Hull1[V1Index], Hull2[V2Index]);
+
+				if (abs(distToLine) < abs(minDist))
+				{
+					minDist = -distToLine;
+
+					NearestV2Index = V2Index;
+				}
+
+				V2IndexPrev = V2Index;
+
+				// For now, simply do brute force...
+				V2Index++;
+
+				if (V2Index >= Hull2.size())
+				{
+					V2Index = 0;
+
+					V1IndexPrev = V1Index;
+					V1Index++;
+
+					if (V1Index >= Hull1.size())
+					{
+						V1Index = 0;
+
+						// Update points to check...
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+
+			StepCount++;
+			done = false;
+		}
+		else
+			done = true;
+	}
+
+	return minDist;
+}
+
+double MaxPolygonDistance(vector<point>& Hull1, vector<point>& Hull2)
+{
+	bool done = false;
+	double maxDist = DBL_MIN;
+	int StepCount = 0, Mode = 0, V2IndexPrev = 0, NearestV2Index = 0, V2Index = 0,
+		V1IndexPrev = 0, NearestV1Index = 0, V1Index = 0;
+
+	while (!done)
+	{
+		if (Mode != 3)
+		{
+			bool doThisOnce = false;
+
+			if (Mode == 0 && !doThisOnce)  // Go through vertices in P1 and determine minimum distance to other polygon's vertices.
+			{
+				point debugLineDirection = point();
+
+				debugLineDirection.x = Hull2[V2Index].x - Hull1[V1Index].x;
+				debugLineDirection.y = Hull2[V2Index].y - Hull1[V1Index].y;
+
+				double distToLine = sqrt(pow(debugLineDirection.x, 2) + pow(debugLineDirection.y, 2));
+
+				if (abs(distToLine) > abs(maxDist))
+				{
+					maxDist = distToLine;
+
+					NearestV1Index = V1Index;
+					NearestV2Index = V2Index;
+				}
+
+				V1IndexPrev = V1Index;
+				V2IndexPrev = V2Index;
+
+				// For now, simply do brute force...
+				V1Index++;
+
+				if (V1Index >= Hull1.size())
+				{
+					V1Index = 0;
+					V2Index++;
+
+					if (V2Index >= Hull2.size())
+					{
+						V2Index = 0;
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+			if (Mode == 1 && !doThisOnce)  // Check P1.Vertex --> P2.Edge
+			{
+				// Get distance from point to this line...
+				double distToLine =
+					PointToLineDistance(Hull2[V2IndexPrev], Hull2[V2Index], Hull1[V1Index]);
+
+				if (abs(distToLine) > abs(maxDist) && distToLine != DBL_MAX)
+				{
+					maxDist = -distToLine;
+
+					NearestV1Index = V1Index;
+				}
+
+				V1IndexPrev = V1Index;
+
+				// For now, simply do brute force...
+				V1Index++;
+
+				if (V1Index >= Hull1.size())
+				{
+					V1Index = 0;
+
+					V2IndexPrev = V2Index;
+					V2Index++;
+
+					if (V2Index >= Hull2.size())
+					{
+						V2Index = 0;
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+			if (Mode == 2 && !doThisOnce)  // Check P2.Vertex --> P1.Edge
+			{
+				// Get distance from point to this line...
+				double distToLine =
+					PointToLineDistance(Hull1[V1IndexPrev], Hull1[V1Index], Hull2[V2Index]);
+
+				if (abs(distToLine) > abs(maxDist) && distToLine != DBL_MAX)
+				{
+					maxDist = -distToLine;
+
+					NearestV2Index = V2Index;
+				}
+
+				V2IndexPrev = V2Index;
+
+				// For now, simply do brute force...
+				V2Index++;
+
+				if (V2Index >= Hull2.size())
+				{
+					V2Index = 0;
+
+					V1IndexPrev = V1Index;
+					V1Index++;
+
+					if (V1Index >= Hull1.size())
+					{
+						V1Index = 0;
+
+						// Update points to check...
+
+						doThisOnce = true;
+						Mode++;
+					}
+				}
+			}
+
+			StepCount++;
+			done = false;
+		}
+		else
+			done = true;
+	}
+
+	return maxDist;
+}
