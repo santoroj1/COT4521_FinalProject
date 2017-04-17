@@ -1,0 +1,15 @@
+
+double MinPolygonDistance(vector<point>& hull1, vector<point> * hull2){
+	//Declare index variables - a,b,c is for first hull
+	a = 0;
+	b = hull1.size();
+	//Midpoint
+	c = hull1.size()/2;
+
+	//Declare index variables - x,y,z is for second hull
+	x = 0;
+	y = hull2.size();
+	//Midpoint
+	z = hull2.size()/2;
+
+}
