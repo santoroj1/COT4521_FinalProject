@@ -21,13 +21,7 @@ double MaxPointBinary(vector U,vector<point>& hull1){
 	//Vector U;
 	a = 0;
 	b = n;
-	/*
-	//Declare index variables - x,y,z is for second hull
-	x = 0;
-	y = hull2.size();
-	//Midpoint
-	z = hull2.size()/2;
-	*/
+	
 	A = hull1[1] - hull[0];
 	upA = up(U,A);
 	//Test if V[0] is a local maximum
@@ -75,6 +69,8 @@ double MaxPointBinary(vector U,vector<point>& hull1){
 		}
 	}
 }
+//not sure if needed, could use above function and reverse U
+/*
 double minPointBinary(vector U, vector<point> hull) {
 		//Find min vertex first - couls flip the vector so that it points 
 		//toward the other one
@@ -89,13 +85,13 @@ double minPointBinary(vector U, vector<point> hull) {
 	//Vector U;
 	a = 0;
 	b = n;
-	/*
+	
 	//Declare index variables - x,y,z is for second hull
-	x = 0;
-	y = hull2.size();
+	//x = 0;
+	//y = hull2.size();
 	//Midpoint
-	z = hull2.size()/2;
-	*/
+	//z = hull2.size()/2;
+	
 	A = hull1[1] - hull[0];
 	upA = up(U,A);
 	//Test if V[0] is a local maximum
@@ -142,18 +138,18 @@ double minPointBinary(vector U, vector<point> hull) {
 			}
 		}
 	}
-}
+}*/
 double MinDistanceBinary(vector<point>& hull1,vector<point>& hull2) {
 	vector U,N;
-	int max1; //index of maximum point of hull1
-	int min2; //index of minimum point of hull2
+	int max1; 			//index of maximum point of hull1
+	int min2; 			//index of minimum point of hull2
 
-	//Find the normal vector somehow
+	//Find the vector that somehow
 
 	max1 = MaxPointBinary(U,hull1);
 	
 	//Reverse direction vector ????
-	min2 = MaxPointBinary(U,hull2)
+	min2 = MaxPointBinary(U,hull2);
 
 	return sqrt(pow(hull2[min2].x-hull1[max1].x,2) + pow(hull2[min2].y-hull1[max1].y,2));
 
